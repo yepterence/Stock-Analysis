@@ -1,0 +1,1 @@
+Purpose of the project is to pull historic stock data of a specific ticker symbol on US stock market from Yahoo Finance and perform an analysis on the stock pricing.
