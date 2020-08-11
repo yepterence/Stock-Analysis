@@ -1,1 +1,1 @@
-Purpose of the project is to pull historic stock data of a specific ticker symbol on US stock market from Yahoo Finance and perform an analysis on the stock pricing.
+Purpose of the project is to pull historic stock data of a specific ticker symbol on US stock market from Yahoo Finance and perform an analysis on the stock pricing. Then look at various North American indices and create a prediction model for prices based on historical data. Eventually, we would like to incorporate sentiment analysis to analyse news headlines and how it affects the market as a whole. 
