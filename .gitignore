@@ -1,1 +1,4 @@
 $null 
+*.pickle
+Untitled*
+.ipynb-checkpoints
