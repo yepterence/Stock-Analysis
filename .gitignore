@@ -2,3 +2,5 @@ $null
 *.pickle
 Untitled*
 .ipynb-checkpoints
+./stock_dfs
+__pycache__
