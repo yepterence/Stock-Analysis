@@ -96,8 +96,10 @@ def market_close_check():
 
 
 def compile_data():
-	pickle_list = glob.glob('./*.pickle')
+	pickle_list = glob.glob('*.pickle')
 	# find existing .pickle file
+	filename = pickle_list[0].split('.')[0]
+
 	with open(pickle_list[0],'rb') as f:
 		tickers = pickle.load(f)
 
@@ -113,7 +115,7 @@ def compile_data():
 		# set Date column as index column, 
 		# inplace set to True so that its not redefined it everytime
 		# is done in place.
-		df.rename(columns = {'Adj Close', ticker}, inplace=True)
+		df.rename(columns = {'Adj Close': ticker}, inplace=True)
 		# since the only values we need for analysis is the adjusted close value
 		# we rename column name to ticker symbol
 		df_adj_col_ticker = df.loc[:,[ticker]]
@@ -121,5 +123,10 @@ def compile_data():
 			main_df = df_adj_col
 		else:
 			main_df = main_df.join(df, how='outer')
-		
+		# Track progress of compiling
+		if count % 10 == 0:
+			print ('Percent complete: {}'.format(count/500*100))
+	# convert dataframe to csv
+	main_df.to_csv(filename + '.csv')
+
 
