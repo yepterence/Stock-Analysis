@@ -62,10 +62,11 @@ def get_ticker_financial_data(start_datetime,end_datetime,site, update_tickers=F
 				df = web.DataReader(ticker, site, start_datetime, end_datetime)
 				print ('Creating file: {}.csv'.format(ticker))
 				df.to_csv('stock_dfs/{}.csv'.format(ticker))
-			except:
+			except Exception as e:
 				# adding pass to ignore errors due to issue with some tickers having incorrectly formatted keys
 				# The main errors being encountered are with a few tickers that are giving a KeyError: 'Date'
 				# Adding this try/except will allow the loop to continue downloading data
+				print ('Failed to retrieve data for {} due to'.format(ticker) + str(e))
 				pass
 		else:
 			print ('{}.csv Currently exists and is upto date'.format(ticker))
@@ -95,38 +96,52 @@ def market_close_check():
 		retrieve_ticker_financial_data(update_tickers=True)
 
 
-def compile_data():
-	pickle_list = glob.glob('*.pickle')
+def compile_index_data(data_filepath,index_name):
+	# Input filepath of financial data csv dump
+	# compile all the information into one dataframe
+	# return dataframe containing Adjusted price values of each 
+	# security listed in directory 
+
 	# find existing .pickle file
-	filename = pickle_list[0].split('.')[0]
+	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0]
 
-	with open(pickle_list[0],'rb') as f:
-		tickers = pickle.load(f)
+	# with open(pickle_list[0],'rb') as f:
+	# 	tickers = pickle.load(f)
 
-	# create empty dataframe
+	tickers = os.listdir(data_filepath)
+	os.chdir(data_filepath)
+	# retrieve list of csv files in given filepath
 	main_df = pd.DataFrame()
+	# create empty dataframe
 
 	for count, ticker in enumerate(tickers):
-		# using enumerate to loop through all the tickers
-		# and keep track of the number of tickers 
-		df = pd.read_csv('stock_dfs/{}.csv'.format(ticker))
-		# import csv into dataframe 
-		df.set_index('Date',inplace=True)
-		# set Date column as index column, 
-		# inplace set to True so that its not redefined it everytime
-		# is done in place.
-		df.rename(columns = {'Adj Close': ticker}, inplace=True)
-		# since the only values we need for analysis is the adjusted close value
-		# we rename column name to ticker symbol
-		df_adj_col_ticker = df.loc[:,[ticker]]
-		if main_df.empty:
-			main_df = df_adj_col
-		else:
-			main_df = main_df.join(df, how='outer')
-		# Track progress of compiling
-		if count % 10 == 0:
-			print ('Percent complete: {}'.format(count/500*100))
+		try:
+			# using enumerate to loop through all the tickers
+			# and keep track of the number of tickers 
+			df = pd.read_csv(ticker)
+			# import csv into dataframe 
+			df.set_index('Date',inplace=True)
+			# set Date column as index column, 
+			# inplace set to True so that its not redefined it everytime
+			# is done in place.
+			df.rename(columns = {'Adj Close': ticker}, inplace=True)
+			# since the only values we need for analysis is the adjusted close value
+			# we rename column name to ticker symbol
+			# df_adj_col_ticker = df[ticker].to_frame()
+			if main_df.empty:
+				main_df = df[ticker].to_frame()
+				# convert series into dataframe
+			else:
+				main_df = main_df.join(df[ticker].to_frame(), how='outer')
+			# Track progress of compiling
+			if count % 10 == 0:
+				print ('Percent complete: {}'.format(count/500*100).round(1))
+		except Exception as e:
+			print ('Failed to compile {} due to: '.format(ticker) + str(e))
+			pass
+
 	# convert dataframe to csv
+	print ('Compiling data into {}.csv'.format(filename))
 	main_df.to_csv(filename + '.csv')
 
 
