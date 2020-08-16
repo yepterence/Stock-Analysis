@@ -103,7 +103,7 @@ def compile_index_data(data_filepath,index_name):
 	# security listed in directory 
 
 	# find existing .pickle file
-	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0]
+	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0] + '_adj_close'
 
 	# with open(pickle_list[0],'rb') as f:
 	# 	tickers = pickle.load(f)
@@ -124,24 +124,26 @@ def compile_index_data(data_filepath,index_name):
 			# set Date column as index column, 
 			# inplace set to True so that its not redefined it everytime
 			# is done in place.
-			df.rename(columns = {'Adj Close': ticker}, inplace=True)
+			t_name = ticker.split('.')[0]
+			df.rename(columns = {'Adj Close': t_name}, inplace=True)
 			# since the only values we need for analysis is the adjusted close value
 			# we rename column name to ticker symbol
 			# df_adj_col_ticker = df[ticker].to_frame()
 			if main_df.empty:
-				main_df = df[ticker].to_frame()
+				main_df = df[t_name].to_frame()
 				# convert series into dataframe
 			else:
-				main_df = main_df.join(df[ticker].to_frame(), how='outer')
+				main_df = main_df.join(df[t_name].to_frame(), how='outer')
 			# Track progress of compiling
 			if count % 10 == 0:
-				print ('Percent complete: {}'.format(count/500*100).round(1))
+				print ('Percent complete: {}'.format(round(count/500*100)))
 		except Exception as e:
-			print ('Failed to compile {} due to: '.format(ticker) + str(e))
+			print ('Failed to compile {} due to: '.format(t_name) + str(e))
 			pass
 
 	# convert dataframe to csv
 	print ('Compiling data into {}.csv'.format(filename))
 	main_df.to_csv(filename + '.csv')
+	return filename + '.csv'
 
 
