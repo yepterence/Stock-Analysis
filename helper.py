@@ -6,7 +6,7 @@ import requests as req
 import datetime as dt
 import pandas as pd
 import pandas_datareader.data as web
-
+import sklearn 
 
 # hardcoded for testing purposes
 sp500_url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -103,7 +103,7 @@ def compile_index_data(data_filepath,index_name):
 	# security listed in directory 
 
 	# find existing .pickle file
-	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0] + '_adj_close'
+	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0] + '_adj_close.csv'
 
 	# with open(pickle_list[0],'rb') as f:
 	# 	tickers = pickle.load(f)
@@ -113,37 +113,65 @@ def compile_index_data(data_filepath,index_name):
 	# retrieve list of csv files in given filepath
 	main_df = pd.DataFrame()
 	# create empty dataframe
+	if filename in tickers:
+		print ('{} already exists'.format(filename))
+	else:
+		for count, ticker in enumerate(tickers):
+			try:
+				# using enumerate to loop through all the tickers
+				# and keep track of the number of tickers 
+				df = pd.read_csv(ticker)
+				# import csv into dataframe 
+				df.set_index('Date',inplace=True)
+				# set Date column as index column, 
+				# inplace set to True so that its not redefined it everytime
+				# is done in place.
+				t_name = ticker.split('.')[0]
+				df.rename(columns = {'Adj Close': t_name}, inplace=True)
+				# since the only values we need for analysis is the adjusted close value
+				# we rename column name to ticker symbol
+				# df_adj_col_ticker = df[ticker].to_frame()
+				if main_df.empty:
+					main_df = df[t_name].to_frame()
+					# convert series into dataframe
+				else:
+					main_df = main_df.join(df[t_name].to_frame(), how='outer')
+				# Track progress of compiling
+				if count % 10 == 0:
+					print ('Percent complete: {}'.format(round(count/500*100)))
+			except Exception as e:
+				print ('Failed to compile {} due to: '.format(t_name) + str(e))
+				pass
 
-	for count, ticker in enumerate(tickers):
-		try:
-			# using enumerate to loop through all the tickers
-			# and keep track of the number of tickers 
-			df = pd.read_csv(ticker)
-			# import csv into dataframe 
-			df.set_index('Date',inplace=True)
-			# set Date column as index column, 
-			# inplace set to True so that its not redefined it everytime
-			# is done in place.
-			t_name = ticker.split('.')[0]
-			df.rename(columns = {'Adj Close': t_name}, inplace=True)
-			# since the only values we need for analysis is the adjusted close value
-			# we rename column name to ticker symbol
-			# df_adj_col_ticker = df[ticker].to_frame()
-			if main_df.empty:
-				main_df = df[t_name].to_frame()
-				# convert series into dataframe
-			else:
-				main_df = main_df.join(df[t_name].to_frame(), how='outer')
-			# Track progress of compiling
-			if count % 10 == 0:
-				print ('Percent complete: {}'.format(round(count/500*100)))
-		except Exception as e:
-			print ('Failed to compile {} due to: '.format(t_name) + str(e))
-			pass
+		# convert dataframe to csv
+		print ('Compiling data into {}'.format(filename))
+		main_df.to_csv(filename)
+	return filename 
 
-	# convert dataframe to csv
-	print ('Compiling data into {}.csv'.format(filename))
-	main_df.to_csv(filename + '.csv')
-	return filename + '.csv'
+time_period = 7
+# time frame in the future to see if stock will profit/loss
+# will probably make this a variable at some point.
+
+def price_delta_label_classifier(df, ticker, time_period):
+	# pricing data converted into percentage change to normalize data
+	# percentage change will be considered as features
+	# labels will be either buy, sell or hold.
+	# if each week, the company's increasing by 2% = buy
+	# if decreasing by 2% = sell, if neither, hold.
+	# Each model is made on a per-company basis, but each company is 
+	# going take into account all the other prices in the index
+
+	data_ = df.fillna(0, inplace=True)
+	# ensuring NaN values are replaced by 0 incase data doesn't exist.
+	tickers = df.columns.values.tolist()
+	# grab all adj close values of security
+	for i in range(1,time_period+1):
+		# loop through 7 days of adj close values
+		data_['{}_{}d'.format(ticker, i)] = (data_[ticker].shift(-i)-data_[ticker])/data_[ticker]
+		# create each column with percentage change in adj close values with increasing time. The shift
+		# function allows us to grab the previous adjusted close entry. 
+	data_.fillna(0, inplace =True)
+	# To ensure there are no NaN values in dataset
+	return tickers, data_
 
 
