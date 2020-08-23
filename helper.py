@@ -1,11 +1,13 @@
-import os
-import glob
 import bs4 as bs
-import pickle
-import requests as req
+from collections import Counter
 import datetime as dt
+import glob
+import numpy as np
+import os
 import pandas as pd
 import pandas_datareader.data as web
+import pickle
+import requests as req
 import sklearn 
 
 # hardcoded for testing purposes
@@ -95,13 +97,21 @@ def market_close_check():
 		print ('Market is now closed. Updating ticker data to latest close values')
 		retrieve_ticker_financial_data(update_tickers=True)
 
+def update_ticker_data():
+	# should be used in conjunction with market close check
+	data_loc = os.path.relpath('./stock_dfs')
+	file_list = os.listdir(data_loc)
+	for file in file_list:
+		time_last_updated = os.path.getmtime('./{}'.format(file))
+		if time_last_updated == dt.datetime.now()
 
 def compile_index_data(data_filepath,index_name):
-	# Input filepath of financial data csv dump
-	# compile all the information into one dataframe
-	# return dataframe containing Adjusted price values of each 
-	# security listed in directory 
-
+	"""
+	 Input filepath of financial data csv dump
+	 compile all the information into one dataframe
+	 return dataframe containing Adjusted price values of each 
+	 security listed in directory 
+	"""
 	# find existing .pickle file
 	filename = [_ for _ in glob.glob('*.pickle') if index_name in _ ][0].split('.')[0] + '_adj_close.csv'
 
@@ -152,17 +162,19 @@ time_period = 7
 # time frame in the future to see if stock will profit/loss
 # will probably make this a variable at some point.
 
-def price_delta_label_classifier(df, ticker, time_period):
-	# pricing data converted into percentage change to normalize data
-	# percentage change will be considered as features
-	# labels will be either buy, sell or hold.
-	# if each week, the company's increasing by 2% = buy
-	# if decreasing by 2% = sell, if neither, hold.
-	# Each model is made on a per-company basis, but each company is 
-	# going take into account all the other prices in the index
-
-	data_ = df.fillna(0, inplace=True)
-	# ensuring NaN values are replaced by 0 incase data doesn't exist.
+def process_data_for_labels(df, ticker, time_period):
+	"""
+	pricing data converted into percentage change to normalize data
+	percentage change will be considered as features
+	labels will be either buy, sell or hold.
+	if each week, the company's increasing by 2% = buy
+	if decreasing by 2% = sell, if neither, hold.
+	Each model is made on a per-company basis, but each company is 
+	going take into account all the other prices in the index
+	"""
+	data_ = df.fillna(0)
+	# ensuring NaN values are replaced by 0 incase data doesn't exist. 
+	# Avoiding inplace as it does not convert NaNs as expected, and will return None
 	tickers = df.columns.values.tolist()
 	# grab all adj close values of security
 	for i in range(1,time_period+1):
@@ -170,8 +182,42 @@ def price_delta_label_classifier(df, ticker, time_period):
 		data_['{}_{}d'.format(ticker, i)] = (data_[ticker].shift(-i)-data_[ticker])/data_[ticker]
 		# create each column with percentage change in adj close values with increasing time. The shift
 		# function allows us to grab the previous adjusted close entry. 
-	data_.fillna(0, inplace =True)
+	data_.fillna(0)
 	# To ensure there are no NaN values in dataset
 	return tickers, data_
+	# returns list of tickers and dataframe
 
+def action_label(*args):
+	# returns numerical value that can be used to label tickers as 
+	# buy, sell or hold 
+	columns = [x for x in args]
+	req = 0.02
+	for col in columns:
+		if col > req:
+			return 1
+		elif col < -req:
+			return -1
+	return 0
 
+def extract_featuresets(df, ticker_list,ticker):
+	# ticker_list, df = process_data_for_labels(df, ticker, time_period)
+	df['{}_target'.format(ticker)] = list(map(action_label, *[data_['{}_{}d'.format(ticker, i)] for i in range (1, time_period)]))
+	# creates new column ticker_target (feature sets), that generates a buy, sell or hold label for each ticker
+	vals = df['{}_target'.format(ticker)].values.tolist()
+	# list price values of ticker 
+	str_vals = [str(i) for i in vals]
+	# convert all to string for usage in Counter
+	print ('Data spread: ', Counter(str_vals))
+	df.fillna(0)
+	df = df.replace([np.inf,-np.inf],np.nan)
+	df.dropna(inplace=True)
+
+	df_vals = df[[ticker for ticker in ticker_list]].pct_change()
+	df_vals = df_vals.replace([np.inf,-np.inf], 0)
+	df_vals.fillna(0, inplace=True)
+
+	# Labels
+	X = df_vals.values
+	y = df['{}_target'.format(ticker)].values
+
+	return X, y, df
