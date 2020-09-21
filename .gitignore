@@ -4,3 +4,4 @@ Untitled*
 *.ipynb-checkpoints
 ./stock_dfs
 __pycache__
+api-key
