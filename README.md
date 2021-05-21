@@ -1,7 +1,7 @@
 # Forecasting price time-series based on historical values and classifying a buy/sell action using supervised machine learning 
 Author: Terence Yep
 
-![Image of price chart](https://yepterence.github.com/img/candle-stick-graph-stock.jpg)
+![Image of stock chart](img/candle-stick-graph-stock.jpg?raw=true "Image of stock chart")
 ## Introduction
 When evaluating the price of a business/stock, there are two schools of thought: [Fundamental Analysis](https://www.investopedia.com/articles/trading/06/fundamentalapproach.asp), which measures the stock's intrinsic value by studying the economy, industry the company operates in and the company itself. And [technical analysis](https://www.investopedia.com/terms/t/technicalanalysis.asp), which evaluates trading opportunities from analyzing price movement and volume. Apart from that, we also need to take into consideration how traders will react to macroeconomic trends, financial news, market anouncements, analyst forecasts to name a few. 
 
