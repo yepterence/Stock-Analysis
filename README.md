@@ -2,6 +2,7 @@
 Author: Terence Yep
 
 ![Image of stock chart](img/candle-stick-graph-stock.jpg?raw=true "Image of stock chart")
+<br>
 Source: Getty Images
 
 ## Introduction
@@ -30,13 +31,18 @@ But beyond financial institutions, the method can virtually be applied to proble
 * Yahoo Finance api 
 * Quandl api 
 
+### Visualization 
+
+{% include img/candlestick-chart.html %}
+Fig I. Interactive candlestick chart of MSFT over 3 years. Overlayed 50, 100 and 200 day moving average plots.   
+
 ### Limitations
 
 As mentioned earlier, we're trying to forecast the price based on historical price data. 
 
 - Biases
     * Buy/sell labels were generated based on user's understanding of investment strategies. 
-     
+
 - Incomplete information
     * Macro trends were not considered. 
     * Financials of company not considered.
