@@ -2,17 +2,19 @@
 Author: Terence Yep
 
 ![Image of stock chart](img/candle-stick-graph-stock.jpg?raw=true "Image of stock chart")
+Source: Getty Images
+
 ## Introduction
 When evaluating the price of a business/stock, there are two schools of thought: [Fundamental Analysis](https://www.investopedia.com/articles/trading/06/fundamentalapproach.asp), which measures the stock's intrinsic value by studying the economy, industry the company operates in and the company itself. And [technical analysis](https://www.investopedia.com/terms/t/technicalanalysis.asp), which evaluates trading opportunities from analyzing price movement and volume. Apart from that, we also need to take into consideration how traders will react to macroeconomic trends, financial news, market anouncements, analyst forecasts to name a few. 
 
 ## Problem statement
-So how does one go about predicting the price if we do want to perform technical analysis on a particular stock? 
-Daily stock price data is in essence a time-series 
+Daily stock price data is in essence a time-series, where a security’s price, over a specified period of time with data points recorded at regular intervals. We can then predict future activity based on the patterns associated to the time-series. This relates to trend analysis, cyclical fluctuation analysis, and issues of seasonality.
+So how does one go about predicting the price for a given security? Is it possible to leverage machine learning using price data alone to forecast tomorrow's price? How about six months from now? And can we accurately recommend buy or sell actions to retain our gains prior to a major downturn?
 
-The objective of this project is two fold:
+We will attempt to answer those questions by:
 
-- Develop a model that forecasts price 
-- Accurately predict a buy/sell action 
+- Investigating various machine learning models to forecast the price of Microsoft (MSFT)
+- Recommend a buy/sell action based on predictions.  
 
 ### Who Cares? 
 This type of problem is typically encountered by Financial institutions: 
