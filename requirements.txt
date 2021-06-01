@@ -1,0 +1,12 @@
+notebook
+pandas
+numpy
+statsmodels
+seaborn 
+sklearn
+wordcloud
+pmdarima 
+plotly
+warnings 
+yfinance 
+quandl
